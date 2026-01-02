@@ -5,6 +5,7 @@
   "main": "lib/index.js",
   "scripts": {
     "preinstall": "node ensure-sdk.js",
+    "install": "node-gyp rebuild",
     "test": "standard && mocha ./test/test.js"
   },
   "repository": "https://github.com/felixrieseberg/macos-notification-state",
