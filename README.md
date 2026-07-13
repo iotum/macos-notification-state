@@ -35,5 +35,13 @@ operating system info will always return 10.16, rendering the package unusable.
 
 To see the current version, run `xcrun --show-sdk-version`.
 
+For macOS 12+ (Monterey/Ventura/Sequoia), you must also create the follwoing entries in your app's
+plists to give it permission to read the focus state:
+
+1. Entitlement: com.apple.developer.usernotifications.communication in entitlements.plist
+2. Plist key: NSFocusStatusUsageDescription in extra.plist
+
+Without these, the Focus Center API won't have permission to check focus status.
+  
 #### License
 MIT, please see LICENSE for details. Copyright (c) 2019 Felix Rieseberg.
