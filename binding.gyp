@@ -17,9 +17,8 @@
           "xcode_settings": {
               "ARCHS": ["x86_64", "arm64"],
               "ONLY_ACTIVE_ARCH": "NO",
-              "OTHER_CFLAGS": ["-arch", "x86_64", "-arch", "arm64"],
-              "OTHER_CPLUSPLUSFLAGS": ["-std=c++17", "-stdlib=libc++", "-mmacosx-version-min=10.7", "-arch", "x86_64", "-arch", "arm64"],
-              "OTHER_LDFLAGS": ["-arch", "x86_64", "-arch", "arm64", "-framework", "CoreFoundation", "-framework", "CoreGraphics"]
+              "OTHER_CPLUSPLUSFLAGS": ["-std=c++17", "-stdlib=libc++", "-mmacosx-version-min=10.7"],
+              "OTHER_LDFLAGS": ["-framework", "CoreFoundation", "-framework", "CoreGraphics"]
           }
         }],
       ]
