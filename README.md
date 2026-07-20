@@ -5,8 +5,10 @@ Do you want to check if you should display a notification to your user on macOS?
 npm install macos-notification-state
 ```
 
+The native addons are built as universal macOS binaries (`x86_64` + `arm64`) so the module can be used in universal Electron apps.
+
 ```
-const { getNotificationState, getSessionState, getDoNotDisturb } = require('macos-notification-state`)
+const { getNotificationState, getSessionState, getDoNotDisturb } = require('macos-notification-state')
 
 // This will brint a boolean (true if enabled, false if not)
 console.log(getDoNotDisturb())

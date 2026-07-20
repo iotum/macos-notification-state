@@ -15,8 +15,10 @@
             "lib/dnd/monterey-macos-dnd.mm"
           ],
           "xcode_settings": {
+              "ARCHS": ["x86_64", "arm64"],
+              "ONLY_ACTIVE_ARCH": "NO",
               "OTHER_CPLUSPLUSFLAGS": ["-std=c++17", "-stdlib=libc++", "-mmacosx-version-min=10.7"],
-              "OTHER_LDFLAGS": ["-framework CoreFoundation -framework CoreGraphics"]
+              "OTHER_LDFLAGS": ["-framework", "CoreFoundation", "-framework", "CoreGraphics"]
           }
         }],
       ]
@@ -30,8 +32,10 @@
           'include_dirs' : [ "<!@(node -p \"require('node-addon-api').include\")" ],
           'defines': [ 'NAPI_DISABLE_CPP_EXCEPTIONS' ],
           "xcode_settings": {
+              "ARCHS": ["x86_64", "arm64"],
+              "ONLY_ACTIVE_ARCH": "NO",
               "OTHER_CPLUSPLUSFLAGS": ["-std=c++17", "-stdlib=libc++", "-mmacosx-version-min=10.7"],
-              "OTHER_LDFLAGS": ["-framework Foundation -weak_framework Intents"]
+              "OTHER_LDFLAGS": ["-framework", "Foundation", "-weak_framework", "Intents"]
           }
         }],
       ]
