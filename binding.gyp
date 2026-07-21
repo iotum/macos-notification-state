@@ -34,7 +34,8 @@
           "xcode_settings": {
               "ARCHS": ["x86_64", "arm64"],
               "ONLY_ACTIVE_ARCH": "NO",
-              "OTHER_CPLUSPLUSFLAGS": ["-std=c++17", "-stdlib=libc++", "-mmacosx-version-min=10.7"],
+              "MACOSX_DEPLOYMENT_TARGET": "12.0",
+              "OTHER_CPLUSPLUSFLAGS": ["-std=c++17", "-stdlib=libc++", "-mmacosx-version-min=12.0"],
               "OTHER_LDFLAGS": ["-framework", "Foundation", "-weak_framework", "Intents"]
           }
         }],
