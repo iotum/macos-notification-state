@@ -1,10 +1,6 @@
 #import "napi.h"
 #import <Foundation/Foundation.h>
 
-#if __has_include("Intents/Intents.h")
-#import <Intents/Intents.h>
-#endif
-
 // Requirements for make it work:
 // 1. add entitlement <key>com.apple.developer.usernotifications.communication</key><true/>
 // 2. create ProvisioningProfile (if have not yet) - allow Communication Notification service access
@@ -21,49 +17,72 @@ Napi::Promise GetFocusStatus(const Napi::CallbackInfo &info) {
       env, Napi::Function::New(env, NoOp), "focusStatusCallback", 0, 1,
       [](Napi::Env) {});
 
-#if __has_include("Intents/Intents.h")
-  NSLog(@"MacosNotificationState: FocusStatusCenter API available");
+  Class focusStatusCenterClass = NSClassFromString(@"INFocusStatusCenter");
+  if (focusStatusCenterClass == Nil) {
+    deferred.Reject(
+        Napi::TypeError::New(env, "getFocusStatus not supported").Value());
+    return deferred.Promise();
+  }
 
-  [[INFocusStatusCenter defaultCenter]
-      requestAuthorizationWithCompletionHandler:^(
-          INFocusStatusAuthorizationStatus status) {
-        NSLog(@"MacosNotificationState: INFocusStatusAuthorizationStatus: %ld",
-              status);
-        auto isAuthorized =
-            status == INFocusStatusAuthorizationStatusAuthorized;
-        // request FocusStatus.isFocused
-        // calc real state according to schedule/personal/dnd focus modes also ensure allowed apps
-        auto isFocused =
-            [[[INFocusStatusCenter defaultCenter] focusStatus] isFocused];
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
+  id defaultCenter =
+      [focusStatusCenterClass performSelector:@selector(defaultCenter)];
+#pragma clang diagnostic pop
 
-        NSLog(@"MacosNotificationState: isFocused: %@", isFocused);
+  if (defaultCenter == nil ||
+      ![defaultCenter
+          respondsToSelector:@selector(
+              requestAuthorizationWithCompletionHandler:)]) {
+    deferred.Reject(
+        Napi::TypeError::New(env, "getFocusStatus not supported").Value());
+    return deferred.Promise();
+  }
 
-        auto callback = [=](Napi::Env env, Napi::Function noop_cb) {
-          if (isAuthorized) {
-            // resolve Promise with value
-            deferred.Resolve(Napi::Number::New(env, [isFocused intValue]));
-          } else {
-            NSString *errorStatus = [NSString
-                stringWithFormat:
-                    @"FocusStatus access not authorized, status: %ld", status];
-            deferred.Reject(
-                Napi::TypeError::New(
-                    env, Napi::String::New(env, [errorStatus UTF8String]))
-                    .Value());
-          }
-        };
-        ts_fn.BlockingCall(callback);
-      }];
-#endif
-  NSLog(@"MacosNotificationState: promise created");
+  [defaultCenter requestAuthorizationWithCompletionHandler:^(
+                     NSInteger status) {
+    NSNumber *isFocused = @0;
+
+    @try {
+      id focusStatus = [defaultCenter valueForKey:@"focusStatus"];
+      if (focusStatus != nil) {
+        id focusedValue = [focusStatus valueForKey:@"isFocused"];
+        if ([focusedValue isKindOfClass:[NSNumber class]]) {
+          isFocused = focusedValue;
+        }
+      }
+    } @catch (NSException *exception) {
+      NSLog(@"MacosNotificationState: failed to read focus status: %@",
+            exception);
+    }
+
+    auto callback = [=](Napi::Env callbackEnv, Napi::Function noop_cb) {
+      if (status == 3) {
+        deferred.Resolve(
+            Napi::Number::New(callbackEnv, [isFocused intValue]));
+      } else {
+        NSString *errorStatus = [NSString
+            stringWithFormat:@"FocusStatus access not authorized, status: %ld",
+                             (long)status];
+        deferred.Reject(
+            Napi::TypeError::New(
+                callbackEnv,
+                Napi::String::New(callbackEnv, [errorStatus UTF8String]))
+                .Value());
+      }
+    };
+
+    ts_fn.BlockingCall(callback);
+  }];
+
   return deferred.Promise();
 }
 
 Napi::Object Init(Napi::Env env, Napi::Object exports) {
-#if __has_include("Intents/Intents.h")
-  exports.Set(Napi::String::New(env, "getFocusStatus"),
-              Napi::Function::New(env, GetFocusStatus));
-#endif
+  if (NSClassFromString(@"INFocusStatusCenter") != Nil) {
+    exports.Set(Napi::String::New(env, "getFocusStatus"),
+                Napi::Function::New(env, GetFocusStatus));
+  }
   return exports;
 }
 NODE_API_MODULE(target_name, Init)
